@@ -1,11 +1,11 @@
 {
   "SX127x_conf":
   {
-    "freq": 868100000,
-    "freq_2": 868300000,
+    "freq": 868300000,
+    "freq_2": 868100000,
     "spread_factor": 7,
-    "pin_nss": 10,
-    "pin_dio0": 6,
+    "pin_nss": 6,
+    "pin_dio0": 7,
     "pin_nss_2": 11,
     "pin_dio0_2": 27,
     "pin_rst": 0,
@@ -21,8 +21,8 @@
     "ref_longitude": 0.0,
     "ref_altitude": 10,
 
-    "name": "your name",
-    "email": "a@b.c",
+    "name": "Francisco Acosta",
+    "email": "f.acosta.ext@kugu-home.com",
     "desc": "Dual channel pkt forwarder",
 
     "interface": "eth0",
@@ -30,7 +30,7 @@
     "servers":
     [
       {
-        "address": "router.eu.staging.thethings.network",
+        "address": "router.eu.thethings.network",
         "port": 1700,
         "enabled": true
       },
