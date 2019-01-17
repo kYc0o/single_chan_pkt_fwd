@@ -272,7 +272,7 @@ bool sendPkt(uint8_t *payLoad, uint8_t payLength, uint32_t tmst, byte CE)
 	for(int i = 0; i < payLength; i++)
     	{
        	 	WriteRegister(REG_FIFO, payLoad[i], CE);					// 0x00
-		if (debug>=2) { printf("%i:", payLoad[i]); }
+		if (debug>=2) { printf("%c:", payLoad[i]); }
     	}
         if (debug>=2) { printf("\n"); }
 	return true;
@@ -730,7 +730,9 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 	// convert double frequency (MHz) into uint32_t frequency in Hz.
 	const uint32_t fff = (uint32_t) ((uint32_t)((ff+0.000035)*1000)) * 1000;
 	// Not we determine CE from the frequency
-	if (ff>868.2) { CE = 1; }
+	if (fff>868300000) {
+		CE = 0;
+	}
 	txLoraModem(payLoad, payLength, tmst, sfTx, powe, fff, crc, iiq, CE);
 #endif
 
