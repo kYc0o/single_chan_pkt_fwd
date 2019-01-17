@@ -3,7 +3,7 @@
   {
     "freq": 868300000,
     "freq_2": 868100000,
-    "spread_factor": 7,
+    "spread_factor": 12,
     "pin_nss": 6,
     "pin_dio0": 7,
     "pin_nss_2": 11,
