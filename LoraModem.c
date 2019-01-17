@@ -37,13 +37,13 @@ uint32_t cp_nb_rx_bad;
 uint32_t cp_nb_rx_nocrc;
 uint32_t cp_up_pkt_fwd;
 
-long txDelay= 0000; 
+long txDelay= 0000;
 
 // Frequencies
 // Set center frequency. If in doubt, choose the first one, comment all others
 // Each "real" gateway should support the first 3 frequencies according to LoRa spec.
-uint32_t  freq = 868100000;                                     // Channel 0, 868.1 MHz
-uint32_t  freq_2 = 868300000;                                   // Channel 1, 868.3 MHz
+uint32_t  freq = 868300000;                                     // Channel 0, 868.1 MHz
+uint32_t  freq_2 = 868100000;                                   // Channel 1, 868.3 MHz
 //uint32_t  freq = 868500000;                                   // Channel 1, 868.5 MHz
 //uint32_t  freq = 867100000;                                   // Channel 2, 867.1 MHz
 //uint32_t  freq = 867300000;                                   // in Mhz! (867.3)
@@ -67,7 +67,7 @@ int ActivityLED_1 = 29;
 
 bool sx1272 = true;
 
-char *PinName(int pin, char *buff) 
+char *PinName(int pin, char *buff)
 {
   strcpy(buff, "unused");
   if (pin != 0xff) {
@@ -126,7 +126,7 @@ uint8_t ReadRegister(uint8_t addr, byte CE)
 }
 
 // ----------------------------------------------------------------------------
-// Write value to a register with address addr. 
+// Write value to a register with address addr.
 // Function writes one byte at a time.
 // ----------------------------------------------------------------------------
 void WriteRegister(uint8_t addr, uint8_t value, byte CE)
@@ -160,32 +160,32 @@ void setRate(uint8_t sf, uint8_t crc, byte CE) {
 		mc1= 0x0A;				// SX1276_MC1_BW_250 0x80 | SX1276_MC1_CR_4_5 0x02
 		mc2= (sf<<4) | crc;
 		// SX1276_MC1_BW_250 0x80 | SX1276_MC1_CR_4_5 0x02 | SX1276_MC1_IMPLICIT_HEADER_MODE_ON 0x01
-        if (sf == SF11 || sf == SF12) { mc1= 0x0B; }			        
-    } 
+        if (sf == SF11 || sf == SF12) { mc1= 0x0B; }
+    }
 	else {
 	    mc1= 0x72;				// SX1276_MC1_BW_125==0x70 | SX1276_MC1_CR_4_5==0x02
 		mc2= (sf<<4) | crc;		// crc is 0x00 or 0x04==SX1276_MC2_RX_PAYLOAD_CRCON
 		mc3= 0x04;				// 0x04; SX1276_MC3_AGCAUTO
         if (sf == SF11 || sf == SF12) { mc3|= 0x08; }		// 0x08 | 0x04
     }
-	
+
 	// Implicit Header (IH), for class b beacons
 	//if (getIh(LMIC.rps)) {
     //   mc1 |= SX1276_MC1_IMPLICIT_HEADER_MODE_ON;
     //    writeRegister(REG_PAYLOAD_LENGTH, getIh(LMIC.rps)); // required length
     //}
-		
+
 	WriteRegister(REG_MODEM_CONFIG1, mc1, CE);
 	WriteRegister(REG_MODEM_CONFIG2, mc2, CE);
 	WriteRegister(REG_MODEM_CONFIG3, mc3, CE);
-	
+
 	// Symbol timeout settings
     if (sf == SF10 || sf == SF11 || sf == SF12) {
         WriteRegister(REG_SYMB_TIMEOUT_LSB,0x05, CE);
     } else {
         WriteRegister(REG_SYMB_TIMEOUT_LSB,0x08, CE);
     }
-	
+
 	return;
 }
 
@@ -213,7 +213,7 @@ void setFreq(uint32_t freq, byte CE)
     WriteRegister(REG_FRF_MSB, (uint8_t)(frf>>16), CE );
     WriteRegister(REG_FRF_MID, (uint8_t)(frf>> 8), CE );
     WriteRegister(REG_FRF_LSB, (uint8_t)(frf>> 0), CE );
-	
+
 	return;
 }
 
@@ -226,14 +226,14 @@ void setPow(uint8_t powe, byte CE) {
 	if (powe >= 16) powe = 15;
 	//if (powe >= 15) powe = 14;
 	else if (powe < 2) powe =2;
-	
+
 	uint8_t pac = 0x80 | (powe & 0xF);
 	WriteRegister(REG_PAC,pac, CE);								// set 0x09 to pac
-	
+
 	if (debug >=2){printf("setPow: CE: %i, powe: %i\n" ,CE, powe);}
-	
+
 	// XXX Power settings for CFG_sx1272 are different
-	
+
 	return;
 }
 
@@ -268,7 +268,7 @@ bool sendPkt(uint8_t *payLoad, uint8_t payLength, uint32_t tmst, byte CE)
 {
 	WriteRegister(REG_FIFO_ADDR_PTR, ReadRegister(REG_FIFO_TX_BASE_AD, CE), CE);	// 0x0D, 0x0E
 	WriteRegister(REG_PAYLOAD_LENGTH, payLength, CE);				// 0x22
-	if (debug>=2) { printf("Sending to LoRa node: "); } 
+	if (debug>=2) { printf("Sending to LoRa node: "); }
 	for(int i = 0; i < payLength; i++)
     	{
        	 	WriteRegister(REG_FIFO, payLoad[i], CE);					// 0x00
@@ -294,10 +294,10 @@ void rxLoraModem(byte CE)
 {
 	// 1. Put system in LoRa mode
 	opmodeLora(CE);
-	
+
 	// Put the radio in sleep mode
     opmode(OPMODE_SLEEP, CE);										// set 0x01 to 0x00
-	
+
 	// 3. Set frequency based on value in freq
 	setFreq(freq, CE);												// set to 868.1MHz or 868.3MHz
 
@@ -324,28 +324,28 @@ void rxLoraModem(byte CE)
     } else {
         WriteRegister(REG_SYMB_TIMEOUT_LSB,0x08, CE);
     }
-	
+
 	// prevent node to node communication
 	WriteRegister(REG_INVERTIQ,0x27, CE);							// 0x33, 0x27; to reset from TX
-	
+
 	// Max Payload length is dependent on 256byte buffer. At startup TX starts at
 	// 0x80 and RX at 0x00. RX therefore maximized at 128 Bytes
     	WriteRegister(REG_MAX_PAYLOAD_LENGTH,0x80, CE);					// set 0x23 to 0x80
     	WriteRegister(REG_PAYLOAD_LENGTH,PAYLOAD_LENGTH, CE);			// 0x22, 0x40; Payload is 64Byte long
-	
+
     	WriteRegister(REG_FIFO_ADDR_PTR, ReadRegister(REG_FIFO_RX_BASE_AD, CE), CE);	// set 0x0D to 0x0F
 
 	WriteRegister(REG_HOP_PERIOD,0x00, CE);							// 0x24, 0x00 was 0xFF
-	
+
     	// Low Noise Amplifier used in receiver
     	WriteRegister(REG_LNA, LNA_MAX_GAIN, CE);  						// 0x0C, 0x23
-	
+
 	WriteRegister(REG_IRQ_FLAGS_MASK, ~IRQ_LORA_RXDONE_MASK, CE);	// Accept no interrupts except RXDONE
 	WriteRegister(REG_DIO_MAPPING_1, MAP_DIO0_LORA_RXDONE, CE);		// Set RXDONE interrupt to dio0
-	
+
 	// Set Continous Receive Mode
     	opmode(OPMODE_RX, CE);											// 0x80 | 0x05 (listen)
-	
+
 	return;
 }
 
@@ -357,13 +357,13 @@ void rxLoraModem(byte CE)
 // As the ESP8266 watchdog will not like us to wait more than a few hundred
 // milliseconds (or it will kick in) we have to implement a simple way to wait
 // time in case we have to wait seconds before sending messages (e.g. for OTAA 5 or 6 seconds)
-// Without it, the system is known to crash in half of the cases it has to wait for 
+// Without it, the system is known to crash in half of the cases it has to wait for
 // JOIN-ACCEPT messages to send.
 //
 // This function uses a combination of delay() statements and delayMicroseconds().
 // As we use delay() only when there is still enough time to wait and we use micros()
 // to make sure that delay() did not take too much time this works.
-// 
+//
 // Parameter: uint32-t tmst gives the micros() value when transmission should start.
 // ----------------------------------------------------------------------------
 void loraWait(uint32_t tmst) {
@@ -374,7 +374,7 @@ void loraWait(uint32_t tmst) {
 	//uint32_t startTime = time(NULL);						// Start of the loraWait function
 	tmst += txDelay;
 	uint32_t waitTime = tmst - startTime;
-		
+
 	while (waitTime > 16000) {
        //         if (debug >=1) { printf("tmst; %i, timestamp: %i\n", tmst, time(NULL)); }
 		delay(15);										// ms delay() including yield, slightly shorter
@@ -384,9 +384,9 @@ void loraWait(uint32_t tmst) {
 	}
 	if (waitTime>0) delayMicroseconds(waitTime);
 	else if ((waitTime+20) < 0) printf("loraWait TOO LATE\n");
-	
+
 	//yield();
-	if (debug >=2) { 
+	if (debug >=2) {
 		printf("start: %i",startTime);
 		printf(", end: %i", tmst);
 		printf(", waited: %i", tmst - startTime);
@@ -431,40 +431,40 @@ static void txLoraModem(uint8_t *payLoad, uint8_t payLength, uint32_t tmst, uint
 		printf(", crc: %i", crc);
 		printf(", iiq: 0X%hi", iiq);
 	}
-	
+
 	// 1. Select LoRa modem from sleep mode
 	opmodeLora(CE);												// set register 0x01 to 0x80
-	
+
 	// Assert the value of the current mode
 	if (ReadRegister(REG_OPMODE, CE) && OPMODE_LORA != 0 && debug>=2) { printf("Not 0\n");}
-	
+
 	// 2. enter standby mode (required for FIFO loading))
 	opmode(OPMODE_STANDBY, CE);										// set 0x01 to 0x01
-	
+
 	// 3. Init spreading factor and other Modem setting
 	setRate(sfTx, crc, CE);
-	
+
 	//writeRegister(REG_HOP_PERIOD, 0x00);						// set 0x24 to 0x00 only for receivers
-	
+
 	// 4. Init Frequency, config channel
 	setFreq(freq, CE);
 
 	// 6. Set power level, REG_PAC
 	setPow(powe, CE);
-	
+
 	// 7. prevent node to node communication
 	WriteRegister(REG_INVERTIQ,iiq, CE);							// 0x33, (0x27 or 0x40)
-	
+
 	// 8. set the IRQ mapping DIO0=TxDone DIO1=NOP DIO2=NOP (or lesss for 1ch gateway)
     	//writeRegister(REG_DIO_MAPPING_1, MAP_DIO0_LORA_TXDONE|MAP_DIO1_LORA_NOP|MAP_DIO2_LORA_NOP);
 	WriteRegister(REG_DIO_MAPPING_1, MAP_DIO0_LORA_TXDONE, CE);		// set 0x40 to 0x40
-	
+
 	// 9. clear all radio IRQ flags
     	WriteRegister(REG_IRQ_FLAGS, 0xFF, CE);
-	
+
 	// 10. mask all IRQs but TxDone
     	WriteRegister(REG_IRQ_FLAGS_MASK, ~IRQ_LORA_TXDONE_MASK, CE);
-	
+
 	// txLora
 	opmode(OPMODE_FSTX, CE);										// set 0x01 to 0x02 (actual value becomes 0x82)
 
@@ -474,10 +474,10 @@ static void txLoraModem(uint8_t *payLoad, uint8_t payLength, uint32_t tmst, uint
 	// wait extra delay out. The delayMicroseconds timer is accurate until 16383 uSec.
 	loraWait(tmst);
 	//delay(5000);
-	
+
 	// 15. Initiate actual transmission of FiFo
 	opmode(OPMODE_TX, CE);											// set 0x01 to 0x03 (actual value becomes 0x83)
-	
+
 	// XXX Intead of handling the interrupt of dio0, we wait it out, Not using delay(1);
 	// for trasmitter this should not be a problem.
         if ( CE == 0) {
@@ -489,13 +489,13 @@ static void txLoraModem(uint8_t *payLoad, uint8_t payLength, uint32_t tmst, uint
 	// ----- TX SUCCESS, SWITCH BACK TO RX CONTINUOUS --------
 	// Successful TX cycle put's radio in standby mode.
         if (debug >=2) { printf("Send TX done.\n");}
-	
+
 	// Reset the IRQ register
 	WriteRegister(REG_IRQ_FLAGS, 0xFF, CE);							// set 0x12 to 0xFF
 
 	// Give control back to continuous receive setup
 	// Put's the radio in sleep mode and then in stand-by
-	rxLoraModem(CE);								
+	rxLoraModem(CE);
 	//initLoraModem(CE);
 }
 
@@ -507,11 +507,7 @@ static void txLoraModem(uint8_t *payLoad, uint8_t payLength, uint32_t tmst, uint
 void initLoraModem(byte CE)
 {
   char buff[16];
-	
-    //digitalWrite(RST, HIGH);
-    //delay(100);
-    //digitalWrite(RST, LOW);
-    //delay(100);
+
   if (CE == 0) {
     printf("Trying to detect module CE0 with ");
     printf("NSS=%s "  , PinName(ssPin, buff));
@@ -526,11 +522,11 @@ void initLoraModem(byte CE)
     printf("Led1=%s\n", PinName(Led1 , buff));
   }
 
-  // check basic 
+  // check basic
   if (ssPin == 0xff || dio0 == 0xff) {
     Die("Bad pin configuration ssPin and dio0 need at least to be defined");
   }
-	
+
     uint8_t version = ReadRegister(REG_VERSION, CE);				// Read the LoRa chip version id
     if (version == 0x22) {
         // sx1272
@@ -538,10 +534,10 @@ void initLoraModem(byte CE)
         sx1272 = true;
     } else {
         // sx1276?
-        //digitalWrite(RST, LOW);
-        //delay(100);
-        //digitalWrite(RST, HIGH);
-        //delay(100);
+        digitalWrite(RST, LOW);
+        delay(100);
+        digitalWrite(RST, HIGH);
+        delay(100);
         version = ReadRegister(REG_VERSION, CE);
         if (version == 0x12) {
             // sx1276
@@ -557,14 +553,14 @@ void initLoraModem(byte CE)
 
 	// 7. set sync word
         WriteRegister(REG_SYNC_WORD, 0x34, CE);							// set 0x39 to 0x34 LORA_MAC_PREAMBLE
-	
-	// 5. Config PA Ramp up time								// set 0x0A t0 
+
+	// 5. Config PA Ramp up time								// set 0x0A t0
 	WriteRegister(REG_PARAMP, (ReadRegister(REG_PARAMP, CE) & 0xF0) | 0x08, CE); // set PA ramp-up time 50 uSec
-	
+
 	// Set 0x4D PADAC for SX1276 ; XXX register is 0x5a for sx1272
 	WriteRegister(REG_PADAC_SX1276,  0x84, CE); 					// set 0x4D (PADAC) to 0x84
 	//writeRegister(REG_PADAC, ReadRegister(REG_PADAC, CE)|0x4);
-	
+
 	// Set the radio in Continuous listen mode
 	rxLoraModem(CE);
 	if (debug >= 2) printf("initLoraModem CE%i done\n", CE);
@@ -573,7 +569,7 @@ void initLoraModem(byte CE)
 
 // ----------------------------------------------------------------------------
 // This LoRa function reads a message from the LoRa transceiver
-// returns message length read when message correctly received or 
+// returns message length read when message correctly received or
 // it returns a negative value on error (CRC error for example).
 // UP function
 // ----------------------------------------------------------------------------
@@ -581,7 +577,7 @@ bool ReceivePkt(uint8_t *payload , uint8_t* p_length, byte CE)
 {
     // clear rxDone
     WriteRegister(REG_IRQ_FLAGS, 0x40, CE);						// 0x12; Clear RxDone
-	
+
     int irqflags = ReadRegister(REG_IRQ_FLAGS, CE);				// 0x12
 
     cp_nb_rx_rcv++;											// Receive statistics counter
@@ -611,7 +607,7 @@ bool ReceivePkt(uint8_t *payload , uint8_t* p_length, byte CE)
 }
 
 // ----------------------------------------------------------------------------
-// Send DOWN a LoRa packet over the air to the node. This function does all the 
+// Send DOWN a LoRa packet over the air to the node. This function does all the
 // decoding of the server message and prepares a Payload buffer.
 // The payload is actually transmitted by the sendPkt() function.
 // This function is used for regular downstream messages and for JOIN_ACCEPT
@@ -630,10 +626,10 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 	// size	: 21
 	// tmst : 1800642 									// for example
 	// datr	: "SF7BW125"
-	
+
 	// 12-byte header;
 	//		HDR (1 byte)
-	//		
+	//
 	//
 	// Data Reply for JOIN_ACCEPT as sent by server:
 	//		AppNonce (3 byte)
@@ -642,7 +638,7 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
  	//		DLSettings (1 byte)
 	//		RxDelay (1 byte)
 	//		CFList (fill to 16 bytes)
-	
+
 	int i=0;
 	//StatictJsonBuffer<256> jsonBuffer;
         JSON_Value *root_val = NULL;
@@ -651,14 +647,14 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 
 	char * bufPtr = (char *) (buff_down);
 	//buff_down[length] = 0;
-	
+
 	if (debug >= 2) printf((char *)buff_down);
-	
+
 	// Use JSON to decode the string after the first 4 bytes.
 	// The data for the node is in the "data" field. This function destroys original buffer
 	//JsonObject& root = jsonBuffer.parseObject(bufPtr);
 	root_val = json_parse_string_with_comments((const char *)(bufPtr));
-		
+
 	//if (!root.success()) {
 	if (root_val == NULL) {
 		printf("sendPacket:: ERROR Json Decode \n");
@@ -701,7 +697,7 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 	//}
 
 
-	
+
 	if (data != NULL) {
 		if (debug>=2) { printf("data: %s", (char *) data); }
 	}
@@ -709,7 +705,7 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 		printf("sendPacket:: ERROR data is NULL\n");
 		return(-1);
 	}
-	
+
 	uint8_t iiq = (ipol? 0x40: 0x27);					// if ipol==true 0x40 else 0x27
 	uint8_t crc = 0x00;									// switch CRC off for TX
 	//uint8_t payLength = base64_dec_len((char *) data, strlen(data));
@@ -719,13 +715,13 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 
 	// Compute wait time in microseconds
 	uint32_t w = (uint32_t) (tmst - time(NULL));
-	
+
 #if _STRICT_1CH == 1
 	// Use RX1 timeslot as this is our frequency.
 	// Do not use RX2 or JOIN2 as they contain other frequencies
 	if ((w>1000000) && (w<3000000)) { tmst-=1000000; }
 	else if ((w>6000000) && (w<7000000)) { tmst-=1000000; }
-	
+
 	const uint8_t sfTx = sf;
 	const uint32_t fff = freq;
 	txLoraModem(payLoad, payLength, tmst, sfTx,  powe, fff, crc, iiq, CE);
@@ -740,21 +736,21 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 
 	if (debug>=1) {
 		printf("Sending packet:: ");
-		printf("tmst=%i, ",tmst); 
+		printf("tmst=%i, ",tmst);
 		printf("wait= %i, ", w);
-		
+
 		printf("strict=%i, ", _STRICT_1CH);
 		printf("datr=%s, ", datr);
 		printf("freq=%i->%i, ", freq,fff);
 		printf("sf=%i->%i, ",sf, sfTx);
-		
+
 		printf("modu=%s, ", modu);
 		printf("powe=%i, ", powe);
 		printf("codr=%s, ", codr);
 
 		printf("ipol=%i, through CE%i.\n",ipol, CE);
 	}
-	
+
 	if (payLength != psize) {
 		printf("sendPacket:: WARNING payLength: %i", payLength);
 		printf(", psize=%i", psize);
@@ -765,7 +761,7 @@ int sendPacket(uint8_t *buff_down, uint8_t length, byte CE) {
 	}
 
 	cp_up_pkt_fwd++;
-	
+
 	return 1;
 }
 
@@ -779,7 +775,7 @@ void ftoa(float f, char *val, int p) {
 	int j=1;
 	int ival, fval;
 	char b[6];
-	
+
 	for (int i=0; i< p; i++) { j= j*10; }
 
 	ival = (int) f;								// Make integer part
@@ -790,7 +786,7 @@ void ftoa(float f, char *val, int p) {
         snprintf(b, sizeof(b), "%d", ival);
 	strcat(val,b);
 	strcat(val,".");							// decimal point
-	
+
 	//itoa(fval,b,10);
         snprintf(b, sizeof(b), "%d", fval);
 	strcat(val,b);
@@ -818,8 +814,8 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, uint8_t *message, char messageL
 	char cfreq[12] = {0};								// Character array to hold freq in MHz
 	//int lastTmst = tmst;									// Following/according to spec
 	int buff_index=0;
-	
-	uint8_t value = ReadRegister(REG_PKT_SNR_VALUE, CE);		// 0x19; 
+
+	uint8_t value = ReadRegister(REG_PKT_SNR_VALUE, CE);		// 0x19;
     if( value & 0x80 ) {								// The SNR sign bit is 1
 		// Invert and divide by 4
 		value = ( ( ~value + 1 ) & 0xFF ) >> 2;
@@ -829,16 +825,16 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, uint8_t *message, char messageL
 		// Divide by 4
 		SNR = ( value & 0xFF ) >> 2;
 	}
-	
+
 	prssi = ReadRegister(REG_PKT_RSSI, CE);				// read register 0x1A
-    
-	// Correction of RSSI value based on chip used.	
+
+	// Correction of RSSI value based on chip used.
 	if (sx1272) {
 		rssicorr = 139;
 	} else {											// Probably SX1276 or RFM95
 		rssicorr = 157;
 	}
-			
+
 	if (debug>=1) {
 		printf("Packet RSSI: %i", prssi-rssicorr);
 		printf(" RSSI: %i", ReadRegister(0x1B, CE)-rssicorr);
@@ -851,7 +847,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, uint8_t *message, char messageL
 		}
 		printf("\n");
 	}
-			
+
 	int j;
 	// XXX Base64 library is nopad. So we may have to add padding characters until
 	// 	length is multiple of 4!
@@ -872,7 +868,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, uint8_t *message, char messageL
 	buff_up[10] = ifr.ifr_hwaddr.sa_data[4];
 	buff_up[11] = ifr.ifr_hwaddr.sa_data[5];
 
-	// start composing datagram with the header 
+	// start composing datagram with the header
 	uint8_t token_h = (uint8_t)rand(); 					// random token
 	uint8_t token_l = (uint8_t)rand(); 					// random token
 	buff_up[1] = token_h;
@@ -948,7 +944,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, uint8_t *message, char messageL
 	++buff_index;
 	buff_up[buff_index] = ']';
 	++buff_index;
-	
+
 	// end of JSON datagram payload */
 	buff_up[buff_index] = '}';
 	++buff_index;
@@ -957,7 +953,7 @@ int buildPacket(uint32_t tmst, uint8_t *buff_up, uint8_t *message, char messageL
 	if (debug>=1) {
 		printf("RXPK:: %s\n", (char *)(buff_up + 12));			// DEBUG: display JSON payload
 	}
-            
+
 	return(buff_index);
 }
 
@@ -1176,4 +1172,3 @@ double difftimespec(struct timespec end, struct timespec beginning) {
 
         return x;
 }
-
